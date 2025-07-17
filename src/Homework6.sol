@@ -89,6 +89,11 @@ contract homework6 {
         ECpairing(c, deltaG2);
 
 
+
+        require (ECpairing(negA, b) && ECpairing(alphaG1, betaG2) && ECpairing(bigX, gammaG2) && ECpairing(c, deltaG2), "Pairing check failed");
+        return true;
+
+
     }
 
 
