@@ -1,66 +1,28 @@
-## Foundry
+# Homework 6
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+Implement a solidity contract that verifies the computation for the EC points.
 
-Foundry consists of:
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
 
-## Documentation
+0 = -A_1B_2 +\alpha_1\beta_2 + X_1\gamma_2 + C_1\delta_2\\X_1=x_1G1 + x_2G1 + x_3G1
 
-https://book.getfoundry.sh/
 
-## Usage
+Pick any (nontrivial) values to generate the points that results a balanced equation.
 
-### Build
+Note that x1, x2, x3 are uint256 and the rest are G1 or G2 points.
 
-```shell
-$ forge build
-```
+You will need to take in the following as arguments to a public function:
 
-### Test
 
-```shell
-$ forge test
-```
+A_1, B_2, C_1, x_1,x_2,x_3
 
-### Format
 
-```shell
-$ forge fmt
-```
 
-### Gas Snapshots
+Use the ethereum precompiles for addition and multiplication to compute $X$, then the precompile for pairing to compute the entire equation in one go.
 
-```shell
-$ forge snapshot
-```
+All other points should be hardcoded into the contract. For example, suppose you want
 
-### Anvil
+\alpha_1 = 5G_1\\
+\beta_2 = 6G_2\\
+...
 
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
