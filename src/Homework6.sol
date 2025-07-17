@@ -71,7 +71,7 @@ contract homework6 {
 
         //now we solve for the first equation in the readme 
         //to solve for negative a, we must flip the y coordinate of a
-        ECpoint memory negA = ECpoint(a.x, a.y - p);
+        ECpoint memory negA = ECpoint(a.x, p - a.y);
 
 
         //now we pair the first part of the equation 
