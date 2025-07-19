@@ -89,8 +89,15 @@ contract homework6 {
         ECpairing(c, deltaG2);
 
 
+    //we do a multipairing function to check if the equation is valid i.e. if the multipairing is == g (identity element)
+        //we use the precompile address of 0x08 for this
+        require (ECmultiPairing(
+            negA, b,
+            alphaG1, betaG2,
+            bigX, gammaG2,
+            c, deltaG2
+        ), "Pairing check failed");
 
-        require (ECpairing(negA, b) && ECpairing(alphaG1, betaG2) && ECpairing(bigX, gammaG2) && ECpairing(c, deltaG2), "Pairing check failed");
         return true;
 
 
@@ -194,5 +201,41 @@ contract homework6 {
         return result != 0;
     }
 
+
+
+
+function ECmultiPairing(
+    ECpoint memory a1, ECpointG2 memory b1,
+    ECpoint memory a2, ECpointG2 memory b2,
+    ECpoint memory a3, ECpointG2 memory b3,
+    ECpoint memory a4, ECpointG2 memory b4
+) public view returns (bool) {
+    bytes memory input = abi.encodePacked(
+        a1.x, a1.y, b1.x[1], b1.x[0], b1.y[1], b1.y[0],
+        a2.x, a2.y, b2.x[1], b2.x[0], b2.y[1], b2.y[0],
+        a3.x, a3.y, b3.x[1], b3.x[0], b3.y[1], b3.y[0],
+        a4.x, a4.y, b4.x[1], b4.x[0], b4.y[1], b4.y[0]
+    );
+    
+    bytes memory output = new bytes(32);
+    bool success;
+    assembly {
+        success := staticcall(
+            gas(),
+            0x08,
+            add(input, 0x20),
+            mload(input),
+            add(output, 0x20),
+            32
+        )
+    }
+    require(success, "Multi-pairing failed");
+    
+    uint256 result;
+    assembly {
+        result := mload(add(output, 0x20))
+    }
+    return result != 0;
+}
 
 }
