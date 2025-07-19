@@ -16,6 +16,13 @@ contract homework6 {
     uint256[2] y;
     }
 
+     // New struct to hold a G1/G2 pair for pairing
+    struct Pairing {
+        ECpoint p1;
+        ECpointG2 p2;
+    }
+    
+
     //hardcoding alpha G1 (times 5)
 
     ECpoint alphaG1 = ECpoint(10744596414106452074759370245733544594153395043370666422502510773307029471145,
@@ -52,7 +59,7 @@ contract homework6 {
     ECpoint G1 = ECpoint(1,2);
 
 
-    function add (uint256 x1, uint256 x2, uint256 x3, ECpoint calldata a, ECpointG2 calldata b, ECpoint calldata c) public view returns (bool) {
+    function PairingEquation (uint256 x1, uint256 x2, uint256 x3, ECpoint calldata a, ECpointG2 calldata b, ECpoint calldata c) public view returns (bool) {
 
 
         //we first multiply the bottom equation using scalar multiplication i.e. precompile address of 0x06
@@ -102,17 +109,7 @@ contract homework6 {
         bytes memory output = new bytes(64);
 
         bool success;
-        assembly {
-            // Call precompile at address 0x06 for ECMUL
-            success := staticcall(
-            gas(),
-            0x06,
-            add(input, 0x20),
-            mload(input),
-            add(output, 0x20),
-            64
-            )
-        }
+        (success, output) = address(0x06).staticcall(input);
         require(success, "ECmultiply failed");
 
         uint256 x;
@@ -135,16 +132,7 @@ contract homework6 {
         bytes memory output = new bytes(64);
 
         bool success;
-        assembly {
-            success := staticcall(
-                gas(),
-                0x07,
-                add(input, 0x20),
-                mload(input),
-                add(output, 0x20),
-                64
-            )
-        }
+        (success, output) = address(0x07).staticcall(input);
         require(success, "ECAdd failed");
 
         uint256 x;
@@ -173,25 +161,12 @@ function ECmultiPairing(
         a4.x, a4.y, b4.x[1], b4.x[0], b4.y[1], b4.y[0]
     );
     
-    bytes memory output = new bytes(32);
-    bool success;
-    assembly {
-        success := staticcall(
-            gas(),
-            0x08,
-            add(input, 0x20),
-            mload(input),
-            add(output, 0x20),
-            32
-        )
-    }
-    require(success, "Multi-pairing failed");
-    
-    uint256 result;
-    assembly {
-        result := mload(add(output, 0x20))
-    }
-    return result != 0;
+   
+
+    (bool ok, bytes memory result) = address(0x08).staticcall(input);
+    require(ok, "Multi-pairing call failed");
+
+  
 }
 
 }
