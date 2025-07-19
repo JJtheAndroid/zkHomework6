@@ -26,3 +26,6 @@ All other points should be hardcoded into the contract. For example, suppose you
 \beta_2 = 6G_2\\
 ...
 
+
+
+## Note the proposed solution does not compile unless viaIR is set to true 

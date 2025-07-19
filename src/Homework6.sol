@@ -16,6 +16,7 @@ contract homework6 {
     uint256[2] y;
     }
 
+
      // New struct to hold a G1/G2 pair for pairing
     struct Pairing {
         ECpoint p1;
@@ -59,7 +60,7 @@ contract homework6 {
     ECpoint G1 = ECpoint(1,2);
 
 
-    function PairingEquation (uint256 x1, uint256 x2, uint256 x3, ECpoint calldata a, ECpointG2 calldata b, ECpoint calldata c) public view returns (bool) {
+      function PairingEquation (uint256 x1, uint256 x2, uint256 x3, ECpoint calldata a, ECpointG2 calldata b, ECpoint calldata c) public view returns (bool) {
 
 
         //we first multiply the bottom equation using scalar multiplication i.e. precompile address of 0x06
@@ -81,23 +82,22 @@ contract homework6 {
         ECpoint memory negA = ECpoint(a.x, p - a.y);
 
 
-    //we do a multipairing function to check if the equation is valid i.e. if the multipairing is == g (identity element)
+        //we do a multipairing function to check if the equation is valid i.e. if the multipairing is == g (identity element)
         //we use the precompile address of 0x08 for this
-        require (ECmultiPairing(
-            negA, b,
-            alphaG1, betaG2,
-            bigX, gammaG2,
-            c, deltaG2
-        ), "Pairing check failed");
+        Pairing[] memory pairings = new Pairing[](4);
+        pairings[0] = Pairing(negA, b);
+        pairings[1] = Pairing(alphaG1, betaG2);
+        pairings[2] = Pairing(bigX, gammaG2);
+        pairings[3] = Pairing(c, deltaG2);
+
+        require(ECmultiPairing(pairings), "Pairing check failed");
 
         return true;
 
 
     }
 
-
-
-
+    
     function ECmultiply(uint256 scalar, ECpoint memory point) public view returns (ECpoint memory) {
         // This function should implement the scalar multiplication of an elliptic curve point
         // using the precompile at address 0x06.
@@ -148,25 +148,32 @@ contract homework6 {
 
 
 
-function ECmultiPairing(
-    ECpoint memory a1, ECpointG2 memory b1,
-    ECpoint memory a2, ECpointG2 memory b2,
-    ECpoint memory a3, ECpointG2 memory b3,
-    ECpoint memory a4, ECpointG2 memory b4
-) public view returns (bool) {
-    bytes memory input = abi.encodePacked(
-        a1.x, a1.y, b1.x[1], b1.x[0], b1.y[1], b1.y[0],
-        a2.x, a2.y, b2.x[1], b2.x[0], b2.y[1], b2.y[0],
-        a3.x, a3.y, b3.x[1], b3.x[0], b3.y[1], b3.y[0],
-        a4.x, a4.y, b4.x[1], b4.x[0], b4.y[1], b4.y[0]
-    );
-    
-   
+function ECmultiPairing(Pairing[] memory pairings) public pure returns (bool) {
+    bytes memory input = new bytes(pairings.length * 192);
 
-    (bool ok, bytes memory result) = address(0x08).staticcall(input);
-    require(ok, "Multi-pairing call failed");
+    // Each pairing is 192 bytes: G1 (2*32) + G2 (4*32)
+    for (uint i = 0; i < pairings.length; i++) {
+        uint offset = i * 192;
+        ECpoint memory p1 = pairings[i].p1;
+        ECpointG2 memory p2 = pairings[i].p2;
 
-  
+        // G1: x, y
+        bytes32 p1x = bytes32(p1.x);
+        bytes32 p1y = bytes32(p1.y);
+        // G2: x[1], x[0], y[1], y[0] (swapped order for precompile)
+        bytes32 p2x1 = bytes32(p2.x[1]);
+        bytes32 p2x0 = bytes32(p2.x[0]);
+        bytes32 p2y1 = bytes32(p2.y[1]);
+        bytes32 p2y0 = bytes32(p2.y[0]);
+
+        for (uint j = 0; j < 32; j++) input[offset + j] = p1x[j];
+        for (uint j = 0; j < 32; j++) input[offset + 32 + j] = p1y[j];
+        for (uint j = 0; j < 32; j++) input[offset + 64 + j] = p2x1[j];
+        for (uint j = 0; j < 32; j++) input[offset + 96 + j] = p2x0[j];
+        for (uint j = 0; j < 32; j++) input[offset + 128 + j] = p2y1[j];
+        for (uint j = 0; j < 32; j++) input[offset + 160 + j] = p2y0[j];
+    }
+
 }
 
 }
