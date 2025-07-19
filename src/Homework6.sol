@@ -74,21 +74,6 @@ contract homework6 {
         ECpoint memory negA = ECpoint(a.x, p - a.y);
 
 
-        //now we pair the first part of the equation 
-        ECpairing(negA, b);
-
-
-        //next we pair the second part of the equation
-        ECpairing(alphaG1, betaG2);
-
-        //next we pair the third part of the equation 
-        ECpairing(bigX, gammaG2);
-
-
-        //next we pair the fourth part of the equation
-        ECpairing(c, deltaG2);
-
-
     //we do a multipairing function to check if the equation is valid i.e. if the multipairing is == g (identity element)
         //we use the precompile address of 0x08 for this
         require (ECmultiPairing(
@@ -171,35 +156,6 @@ contract homework6 {
         return ECpoint(x, y);
     }
 
-
-
-
-    function ECpairing (ECpoint memory a, ECpointG2 memory b) public view returns (bool) {
-        // This function should implement the pairing check using the precompile at address 0x08.
-        // The implementation details will depend on the specific elliptic curve used.
-        
-        bytes memory input = abi.encodePacked(a.x, a.y, b.x[0], b.x[1], b.y[0], b.y[1]);
-        bytes memory output = new bytes(32);
-
-        bool success;
-        assembly {
-            success := staticcall(
-                gas(),
-                0x08,
-                add(input, 0x20),
-                mload(input),
-                add(output, 0x20),
-                32
-            )
-        }
-        require(success, "ECpairing failed");
-
-        uint256 result;
-        assembly {
-            result := mload(add(output, 0x20))
-        }
-        return result != 0;
-    }
 
 
 
